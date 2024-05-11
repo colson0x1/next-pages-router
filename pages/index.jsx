@@ -1,5 +1,5 @@
 import MeetupList from '@/components/meetups/MeetupList';
-import { useEffect, useState } from 'react';
+// import { useEffect, useState } from 'react';
 
 const DUMMY_MEETUPS = [
   {
@@ -20,7 +20,8 @@ const DUMMY_MEETUPS = [
   },
 ];
 
-function HomePage() {
+function HomePage(props) {
+  /*
   const [loadedMeetups, setLoadedMeetups] = useState([]);
 
   // useEffect works 'afer the component function executes'
@@ -28,7 +29,7 @@ function HomePage() {
   // The first time this component renders, the loadedMeetups state will be
   // this initial state of an empty array.
   // What's important here is:
-  // Becauise if we would fetch this from a backend, our users might see a loading
+  // Because if we would fetch this from a backend, our users might see a loading
   // spinner briefly which could or could not be the user experience we wanna
   // offer. But in addition, even here where we don't really send a request and
   // where the response "arrives basically instantly" even in this case.
@@ -55,6 +56,51 @@ function HomePage() {
   // It has more core features built into NEXtjs that helps us with precisely
   // this problem, that we wanna pre-render a page with data, but with data
   // for which we have to wait. And we need to tell NEXTjs, once we're done waiting!
+
+  // NEXTjs has this built-in page pre-rendering but this builtin process has
+  // a flaw. The page that is pre-rendered has basically the snapshot after
+  // the first component render cycle as its content. And that might be missing
+  // crucial data. So if we visit some route i.e /some-route, if some request
+  // is sent to some-route to this page then, there we return that pre-rendered
+  // page but we might be missing data here.
+  // So whilst this is theoretically good for SEO, it might not always be.
+  // But after this HTML page was received, React will actually take over,
+  // the page (i.e returned pre-rendered page) is hydrated as this process is
+  // called (i.e. now hydrate with React code once loaded), which means that now
+  // React will turn this into a single page application and take over control
+  // and then this useEffect function might be executed, data might be fetched
+  // and the page might be updated in the browser, not on the server, not on the
+  // pre-rendered page but instead, after this page was received in the browser.
+  // And therefore, we then have a fully interactive page (i.e Page / App is interactive)
+  // or app with all the data we need!!
+  // But if we wanna pre-render a page with data so that this initially returned
+  // HTML code already contains the data, we need to fine tune this built-in
+  // pre-rendering process and we need to configure it.
+
+  // And for this, NEXTjs gives us two forms of pre-rendering which we can use
+  // for controlling how the pages should be rendered.
+  // It has something which is called Static Generation.
+  // And it has an alternative, which is called Server Side Rendering.
+  // Two might sound similar but they run or the code runs at different points
+  // of time!!
+  // We're going to use the Static Generation approach because that is the
+  // approach which we typically should use!
+
+  // How Static Generation works?
+  // When using Static Generation, a page component is pre-rendered when we build
+  // our application, when we build the NEXT project. So when we build it
+  // for production.
+  // And that's important. With Static Generation, by default, our page is
+  // not pre-rendered on the fly on the server when a request reaches the
+  // server. But instead, it is pre-rendered when we as a developer build
+  // our site for production. And that means that after it was deployed,
+  // that pre-rendered page does not change. At least not by default.
+  // If we then updated the data, and we know that the pre-rendered page needs
+  // to change,  we need to start that build process again and redeploy again.
+  // But that might sound worse than it actually is because for a lot of applications,
+  // pages don't change all the time. Page content doesn't change all the time.
+  // And if it should change frequently, there are alternatives.
+
   useEffect(() => {
     // send a http request and fetch data
     // so some promise completed above
@@ -62,8 +108,88 @@ function HomePage() {
     // fetched
     setLoadedMeetups(DUMMY_MEETUPS);
   }, []);
+  */
 
-  return <MeetupList meetups={loadedMeetups} />;
+  return <MeetupList meetups={props.meetups} />;
+}
+
+// @ Statis Generation
+// By default, NEXTjs prepares our pages. It by default generates our pages
+// already statically and it by default does that during the build process.
+// But if we need to wait for data, if we need to add data fetching to a
+// page component, we can do so by exporting a special function from inside our
+// page component file.
+// And that's important! This now only works in our page component files,
+// not in other component files. Only in component files inside of the
+// pages folder.
+// In there we can export a functoin, a fn called getStaticProps and it has
+// to be called `getStaticProps`. This is a reserved name so to say.
+// NEXTjs will look for a function with that name and if it finds it, it executes
+// this function during this pre-rendering process.
+// So it will then not directly call our component function and use the returned
+// JSX snapshot as HTML content but it will, first of all, call `getStaticProps`
+// before it calls the component function.
+// And getStaticProps has this name because indeed, its job is to prepare
+// props for this page i.e for this HomePage component.
+// And these props could then contain the data this page (i.e HomePage) needs.
+// And that's useful because `getStaticProps` is allowed to be asynchronous.
+// We can return a promise there and then, that's the key thing, NEXTjs will
+// wait for this promise to resolve which means it waits until our data is
+// loaded and then we return the props for this component function i.e for HomePage.
+// And with that, we're able to load data before this component function is
+// executed so that this component can be rendered with the required data.
+// Now, here in getStaticProps, we can also execute any code that would
+// normally only run on a sever. We could access a file system here or
+// securely connect to a database because any code that we write inside
+// getStaticProps function, will never end up on the client side and it will
+// never execute on the client side simply because this code is executed
+// during the build process, not on the server and especially not on the
+// clients (i.e phone,... browsers) of our visitors.
+// So the code in getStaticProps will never reach the machines of our visitors.
+// It will never execute on their machines.
+
+// Now, here in getStaticProps, we can do whatever we want. For example, fetch
+// data from an API or from a database or read data from some files in the file
+// system. But then once we're done with whatever we did to get the data we need,
+// we need to return an object here in getStaticProps.
+// We always need to return an object here.
+// Now in this object, we can configure various things but most importantly, we
+// typically set a props property here and it has to be named `props`.
+// And that then holds another object, which will be the props object we receive
+// in our component function (i.e HomePage) there, in that page component function.
+// This now receives a props object and the object will be the object we set as props
+// here in getStaticProps.
+// And here we could have our meetups key in there.
+// The structure of this props object is totally up to us, which holds our
+// DUMMY_MEETUPS.
+// With that, those DUMMY_MEETUPS would be loaded and prepared in getStaticProps
+// and then they would be set as props for this page component i.e HomePage.
+// Therefore, in this page component, we no longer need to manage state.
+// We no longer need useEffect and we can therefore get rid of those imports
+// for useState and useEffect there.
+// Because now we get the data through props.
+// And our meetups for the MeetupList component are `props.meetups` (in return i.e <MeetupList .. />)
+// because we're adding a meetups prop down there.
+// And that's how we can move the data fetching away from the client to the
+// server side or to be precise to the during the build process side.
+// If we now reload our NEXT app, we still see everything but if we now view
+// the page source, we see that we no longer have an empty unordered list,
+// instead we have an unordered list which has list items with the images and
+// title and so on.
+// So now this is pre-rendered and it contains the full HTML code and that's
+// of course, also great for Search Engines then because now, data is not fetched
+// in a second component render cycle on the client but initially, before this
+// page is pre-rendered during the build process.
+// And that's a great plus and one of the main features of NEXTjs, this data
+// fetching for pre-rendering!
+export async function getStaticProps() {
+  // fetch data from an API
+
+  return {
+    props: {
+      meetups: DUMMY_MEETUPS,
+    },
+  };
 }
 
 export default HomePage;
