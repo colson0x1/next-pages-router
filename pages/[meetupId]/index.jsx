@@ -1,13 +1,15 @@
+import { MongoClient, ObjectId } from 'mongodb';
+
 import MeetupDetail from '@/components/meetups/MeetupDetail';
 import { Fragment } from 'react';
 
-function MeetupDetails() {
+function MeetupDetails(props) {
   return (
     <MeetupDetail
-      image='https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Stadtbild_M%C3%BCnchen.jpg/1200px-Stadtbild_M%C3%BCnchen.jpg?20130611211153'
-      alt='A First Meetup'
-      address='Some Street 5, Some City'
-      description='This is a first meetup'
+      image={props.meetupData.image}
+      alt={props.meetupData.title}
+      address={props.meetupData.address}
+      description={props.meetupData.description}
     />
   );
 }
@@ -30,15 +32,36 @@ export async function getStaticProps(context) {
 
   console.log(meetupId);
 
+  const client = await MongoClient.connect(
+    'mongodb+srv://colson:startup2025@cluster0.h31egms.mongodb.net/meetups?retryWrites=true&w=majority&appName=Cluster0',
+  );
+  const db = client.db();
+
+  const meetupsCollection = db.collection('meetups');
+
+  // access a single meetup
+  // findOne() finds one single document
+  // And to findOne(), we need to pass an object where we define how to filter,
+  // how to search for that document.
+  // On this object, we can pass our field names, like title, image, address,
+  // or description as keys and then the values for which we wanna search as values.
+  // convert string meetupId into such mongodb ObjectId
+  const selectedMeetup = await meetupsCollection.findOne({
+    _id: new ObjectId(meetupId),
+  });
+
+  client.close();
+
   return {
     props: {
+      // prevent serialization error by making sure that we convert this _id field,
+      // back to a string
       meetupData: {
-        image:
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Stadtbild_M%C3%BCnchen.jpg/1200px-Stadtbild_M%C3%BCnchen.jpg?20130611211153',
-        id: meetupId,
-        title: 'A First Meetup',
-        address: 'Some Street 5, Some City',
-        description: 'This is a first meetup',
+        id: selectedMeetup._id.toString(),
+        title: selectedMeetup.title,
+        address: selectedMeetup.address,
+        image: selectedMeetup.image,
+        description: selectedMeetup.description,
       },
     },
   };
@@ -108,20 +131,41 @@ export async function getStaticProps(context) {
 // value allows us to fetch data for that meetup and allows us to return props
 // for that meetup.
 export async function getStaticPaths() {
+  const client = await MongoClient.connect(
+    'mongodb+srv://colson:startup2025@cluster0.h31egms.mongodb.net/meetups?retryWrites=true&w=majority&appName=Cluster0',
+  );
+  const db = client.db();
+
+  const meetupsCollection = db.collection('meetups');
+
+  // get all the meetups data
+  // find() gives us access to all the meetups
+  // adding filter criteria to get only id
+  // We do want to find all here so an empty object as the first argument, which
+  // means give us all the objects.
+  // We have no filter criteria.
+  // But then we can pass a second argument where we can define which fields should
+  // be extracted for every document.
+  // And by default, all the fields will be returned.
+  // So all the field values title, image and so on.
+  // But if we're only interested in the ID, we can also add _id here and set
+  // this to one. which means only include the ID but no other field values.
+  // But with that, we're only fetching the IDs.
+  // So we fetched document objects, but they each will only contain the ID,
+  // nothing else.
+  // Again we should call toArray() here to convert this to a JS array of objects.
+  const meetups = await meetupsCollection.find({}, { _id: 1 }).toArray();
+
+  client.close();
+
   return {
     fallback: false,
-    paths: [
-      {
-        params: {
-          meetupId: 'm1',
-        },
+    // Generate array of paths dynamically
+    paths: meetups.map((meetup) => ({
+      params: {
+        meetupId: meetup._id.toString(),
       },
-      {
-        params: {
-          meetupId: 'm2',
-        },
-      },
-    ],
+    })),
   };
 }
 
