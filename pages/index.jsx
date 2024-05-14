@@ -114,6 +114,7 @@ function HomePage(props) {
 }
 
 // @ Static Generation
+
 // By default, NEXTjs prepares our pages. It by default generates our pages
 // already statically and it by default does that during the build process.
 // But if we need to wait for data, if we need to add data fetching to a
@@ -202,7 +203,7 @@ function HomePage(props) {
 // update frequency.
 // If our data changes once every hour, then setting this to 3600 might be great.
 // If it changes all the time, one second might be better.
-/* export async function getStaticProps() {
+export async function getStaticProps() {
   // fetch data from an API
 
   return {
@@ -211,7 +212,7 @@ function HomePage(props) {
     },
     revalidate: 1,
   };
-} */
+}
 
 /* @ Server Side Rendering (SSR) */
 
@@ -266,7 +267,7 @@ function HomePage(props) {
 // the starting page, we see it works just as before like with getStaticProps.
 // BUT NOW, the page is really pre-generated for every incoming request!!
 
-export async function getServerSideProps(context) {
+/* export async function getServerSideProps(context) {
   const req = context.req;
   const res = context.res;
 
@@ -277,7 +278,7 @@ export async function getServerSideProps(context) {
       meetups: DUMMY_MEETUPS,
     },
   };
-}
+} */
 
 /* @ getStaticProps vs getServerSideProps */
 // getServerSideProps might sound better because it's guaranteed to run for every
