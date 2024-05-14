@@ -1,3 +1,5 @@
+import { MongoClient } from 'mongodb';
+
 import MeetupList from '@/components/meetups/MeetupList';
 // import { useEffect, useState } from 'react';
 
@@ -207,12 +209,47 @@ function HomePage(props) {
 // update frequency.
 // If our data changes once every hour, then setting this to 3600 might be great.
 // If it changes all the time, one second might be better.
+
 export async function getStaticProps() {
+  // Now we're prerendering this page with data that's actually coming from a
+  // database.
+  // And all this code below will execute whenever this page is pre-generated.
+  // So not for every incoming request, because its not `getServerSideProps`
+  // but `getStaticProps`.
+  // But therefore, during the build process, and when we revalidate, then
+  // this page will be pre-rendered and this code below will run again.
+
   // fetch data from an API
+  // NEXTjs adds a feature that we can use fetch() on server side code as well!
+  // Normally, we can only use it on the browser but in NEXT projects, we can
+  // use fetch() in server side code snippets as well.
+  // fetch('/api/meetups');
+  const client = await MongoClient.connect(
+    'mongodb+srv://colson:startup2025@cluster0.h31egms.mongodb.net/meetups?retryWrites=true&w=majority&appName=Cluster0',
+  );
+  const db = client.db();
+
+  const meetupsCollection = db.collection('meetups');
+
+  // find() will by default find all the documents in that collection
+  // toArray helps us get an array of documents
+  const meetups = await meetupsCollection.find().toArray();
+
+  client.close();
 
   return {
     props: {
-      meetups: DUMMY_MEETUPS,
+      // Error: Error serializing `.meetups[0]._id` returned from `getStaticProps`
+      // in "/".
+      // Reason: `object` ("[object Object]") cannot be serialized as JSON.
+      // Please only return JSON serializable data types.
+      meetups: meetups.map((meetup) => ({
+        title: meetup.title,
+        address: meetup.address,
+        image: meetup.image,
+        // this will then convert this object to a string which is usable
+        id: meetup._id.toString(),
+      })),
     },
     revalidate: 1,
   };
