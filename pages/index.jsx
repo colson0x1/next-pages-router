@@ -182,6 +182,26 @@ function HomePage(props) {
 // page is pre-rendered during the build process.
 // And that's a great plus and one of the main features of NEXTjs, this data
 // fetching for pre-rendering!
+
+// For every data change, we need to start build process again.
+// So If data changes frequently, we can add this extra property to the object
+// returned by getStaticProps called `revalidate`.
+// Using that, we unlock a feature called Incremental Static Generation (ISR).
+// `revalidate` wants a number, example 10 and this number is the number of
+// seconds NEXTjs will wait until it regenerates this page for an incoming request!
+// That means that with revalidate set to some number, this page will not just
+// be generated using build process, it will be generated there but not just
+// but it will also be generated every couple of seconds on the server, at least
+// if there are requests for this page.
+// So that means, this page, with revalidate set to 10, would be regenerated
+// on the server at least every 10 seconds if there are requests coming in
+// for this page.
+// And then these re-gnereated pages would replace the old pre-generated pages!
+// WIth this we ensure that our data is never older than 10 seconds.
+// And therefore the number of seconds we wanna use here depends upon our data
+// update frequency.
+// If our data changes once every hour, then setting this to 3600 might be great.
+// If it changes all the time, one second might be better.
 export async function getStaticProps() {
   // fetch data from an API
 
@@ -189,6 +209,7 @@ export async function getStaticProps() {
     props: {
       meetups: DUMMY_MEETUPS,
     },
+    revalidate: 1,
   };
 }
 
