@@ -1,6 +1,17 @@
+// Here we want to set some title, and we definitely also wanna add a description.
+// To do that, we can import a special component offered by NEXTjs called
+// the Head component
+// This is a component which allows us to add Head elements to the Head section
+// of our page.
+// We simply add it to our returned JSX code!
+// Inside of there, we can now insert our Head elements. So all the HTML
+// elements which we can add in the Head section, we can add it inside the
+// Head component like for example the <title></title> tag and so on.
+import Head from 'next/head';
 import { MongoClient } from 'mongodb';
 
 import MeetupList from '@/components/meetups/MeetupList';
+import { Fragment } from 'react';
 // import { useEffect, useState } from 'react';
 
 // getStaticProps, getStaticPaths and getServerSideProps: This functions allow
@@ -116,7 +127,18 @@ function HomePage(props) {
   }, []);
   */
 
-  return <MeetupList meetups={props.meetups} />;
+  return (
+    <Fragment>
+      <Head>
+        <title>React Meetups</title>
+        <meta
+          name='description'
+          content='Browse a huge list of highly active React meetups!'
+        />
+      </Head>
+      <MeetupList meetups={props.meetups} />;
+    </Fragment>
+  );
 }
 
 // @ Static Generation
