@@ -1,6 +1,8 @@
 /* @ Static Generation */
 // localhost:3000/static-generation
 
+import { useEffect, useState } from 'react';
+
 // @ Moke Database
 // Simulation of DATA we get on the BACKEND
 const BACKEND_DATA = [
@@ -19,12 +21,22 @@ const BACKEND_DATA = [
 ];
 
 // Main Component (Parent)
+// Prerendering
 function StaticGeneration() {
+  const [loadedData, setLoadedData] = useState([]);
+
+  // @ Simulate data fetching from server
+  useEffect(() => {
+    // fetch data from backend
+    // after promise resolves, we have data
+    setLoadedData(BACKEND_DATA);
+  }, []);
+
   return (
     <>
       <h1 style={{ color: 'dodgerblue' }}>Static Generation</h1>
 
-      <StaticGenerationList backendData={BACKEND_DATA} />
+      <StaticGenerationList backendData={loadedData} />
     </>
   );
 }
