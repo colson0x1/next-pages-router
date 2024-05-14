@@ -113,7 +113,7 @@ function HomePage(props) {
   return <MeetupList meetups={props.meetups} />;
 }
 
-// @ Statis Generation
+// @ Static Generation
 // By default, NEXTjs prepares our pages. It by default generates our pages
 // already statically and it by default does that during the build process.
 // But if we need to wait for data, if we need to add data fetching to a
