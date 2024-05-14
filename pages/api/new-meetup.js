@@ -69,7 +69,7 @@
 
 import { MongoClient } from 'mongodb';
 
-export async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method === 'POST') {
     const data = req.body;
 
@@ -131,6 +131,6 @@ export async function handler(req, res) {
     // Here we can add a for example, message key.
     // With that, we have a basic API route which will insert meetups into our
     // database.
-    res.status().json({ message: 'Meetup inserted!' });
+    res.status(201).json({ message: 'Meetup inserted!' });
   }
 }
