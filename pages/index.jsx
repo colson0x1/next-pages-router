@@ -1,6 +1,10 @@
 import MeetupList from '@/components/meetups/MeetupList';
 // import { useEffect, useState } from 'react';
 
+// getStaticProps, getStaticPaths and getServerSideProps: This functions allow
+// us to fetch data for pre-rendering those pages so that we pre-render the pages
+// with the data instead of without the data they might need.
+
 const DUMMY_MEETUPS = [
   {
     id: 'm1',
