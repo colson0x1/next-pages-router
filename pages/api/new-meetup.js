@@ -67,10 +67,70 @@
 // So these are the four fields which we expect to get on the incoming request body.
 // And then we can store them in a database, for example!
 
-export function handler(req, res) {
+import { MongoClient } from 'mongodb';
+
+export async function handler(req, res) {
   if (req.method === 'POST') {
     const data = req.body;
 
-    const { title, image, address, description } = data;
+    // We don't need destructuring here since we directly passed data to
+    // insertOne()
+    // const { title, image, address, description } = data;
+
+    // connect returns a promise hence we turn handler into async
+    // This gives us connected client eventually
+    const client = await MongoClient.connect(
+      'mongodb+srv://colson:startup2025@cluster0.h31egms.mongodb.net/meetups?retryWrites=true&w=majority&appName=Cluster0',
+    );
+    // on that client object we can call db method to get hold of that
+    // database to which we're connecting here
+    // If the database doesn't exist, it will be created on the fly
+    const db = client.db();
+
+    // And then on this database, we can get access to our meetupsCollection
+    // MongoDB is a NoSQL Database that works with collections full of documents.
+    // Collections would be kind of our tables in a SQL database and documents
+    // would be our entries in those tables.
+    // So we have collections which holds multiple documents!
+    // And a single meetup would be a single document, the overall collection
+    // then holds multiple meetups, multiple meetup documents.
+    // And we get hold of a collection by using our database and then the collection
+    // method.
+    // And the collection can have any name of our choice just as the database if
+    // it doesn't exist yet, it will be generated on the fly.
+    const meetupsCollection = db.collection('meetups');
+
+    // And now that we got hold of the meetupsCollection, on that collection here,
+    // we can call `insertOne()` which is one of the built-in query commands
+    // for inserting one new document into this collection.
+    // And now a great thing about MongoDB is that a document is just a object in
+    // the end, a JavaScript object.
+    // And that now could be an object with title, image, address and description.
+    // And since that is the case, since that would make a lot of sense, we can
+    // also just directly insert data so this full data object into our database.
+    // Now we would insert this data object into the database. Now, this also
+    // is an async operation. insertOne() returns a promise and hence we can await
+    // this here as well to get back the result of this operation.
+    // Result will be an object with for example, the automatically generated ID.
+    // We can also use try catch for error handling!
+    const result = await meetupsCollection.insertOne(data);
+    console.log(result);
+
+    // We want to call client.close() to close the database connection once
+    // we're done.
+    client.close();
+    // And then we need to use this res object to send back a response.
+    // Because we're getting the request, we're then storing data in the database,
+    // ultimately, we also need to send back a response then.
+    // This works similarly to what we might be used to from NODE/Express.
+    // We have a status method, which we can call on response to set a HTTP status
+    // code of the response which will be returned.
+    // For example 201 status code to indicate that something was inserted successfully.
+    // We can then chain a JSON call here to prepare the JSON data that will
+    // be added to the outgoing response.
+    // Here we can add a for example, message key.
+    // With that, we have a basic API route which will insert meetups into our
+    // database.
+    res.status().json({ message: 'Meetup inserted!' });
   }
 }
